@@ -2,11 +2,10 @@ import { Activity, Keyboard, RotateCcw } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useKeyboardTester } from "../hooks/useKeyboardTester";
 import {
-  type KeyDef,
   type KeyState,
   mainKeyboard,
   navigationCluster,
-  numpad,
+  numpadCluster,
 } from "../lib/keyboardLayout";
 import { KeyCap } from "./KeyCap";
 
@@ -143,7 +142,7 @@ export default function KeyboardTester() {
               KEYBOARD TESTER
             </h1>
             <p className="text-xs" style={{ color: "oklch(0.50 0.015 200)" }}>
-              HP K100 Wired Keyboard · 104 Keys
+              Full Size Keyboard · 104 Keys
             </p>
           </div>
           <div className="ml-auto flex items-center gap-2">
@@ -284,6 +283,32 @@ export default function KeyboardTester() {
             </div>
           </div>
 
+          {/* Gaming Mode Badge */}
+          <div
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border text-xs font-bold tracking-widest select-none"
+            style={{
+              background: "oklch(0.16 0.04 30)",
+              borderColor: "oklch(0.55 0.22 35)",
+              color: "oklch(0.85 0.22 35)",
+              fontFamily: "Geist Mono, ui-monospace, monospace",
+              letterSpacing: "0.14em",
+              animation: "gamingBadgePulse 2s ease-in-out infinite",
+            }}
+          >
+            <span
+              style={{
+                width: "7px",
+                height: "7px",
+                borderRadius: "50%",
+                background: "oklch(0.75 0.28 35)",
+                display: "inline-block",
+                boxShadow: "0 0 6px oklch(0.75 0.28 35 / 0.9)",
+                flexShrink: 0,
+              }}
+            />
+            GAMING MODE
+          </div>
+
           {/* Reset */}
           <button
             type="button"
@@ -411,10 +436,10 @@ export default function KeyboardTester() {
               ))}
             </div>
 
-            {/* Right clusters */}
+            {/* Right cluster: navigation + arrows */}
             <div className="flex gap-2 ml-1">
               {/* Navigation cluster */}
-              <div className="flex flex-col gap-1 mt-[46px]">
+              <div className="flex flex-col gap-1">
                 {navigationCluster.rows.map((row, rowIdx) => (
                   <div
                     // biome-ignore lint/suspicious/noArrayIndexKey: nav cluster rows are fixed-order
@@ -423,7 +448,7 @@ export default function KeyboardTester() {
                     style={{
                       height:
                         row.keys.length === 0 ? `${KEY_SIZE}px` : undefined,
-                      justifyContent: rowIdx === 3 ? "center" : "flex-start",
+                      justifyContent: rowIdx === 5 ? "center" : "flex-start",
                     }}
                   >
                     {row.keys.map((keyDef) => {
@@ -441,32 +466,132 @@ export default function KeyboardTester() {
                 ))}
               </div>
 
-              {/* Numpad */}
-              <div className="flex flex-col gap-1 mt-[46px]">
-                {numpad.rows.map((row, rowIdx) => (
-                  <NumpadRow
-                    // biome-ignore lint/suspicious/noArrayIndexKey: numpad rows are fixed-order
-                    key={rowIdx}
-                    row={row}
-                    keyStates={keyStates}
-                  />
-                ))}
+              {/* Numpad cluster */}
+              <div className="flex flex-col gap-1">
+                {/* Row 0: NumLock / * - */}
+                <div className="flex gap-1">
+                  {numpadCluster.rows[0].keys.map((keyDef) => {
+                    const idx = nextIndex();
+                    return (
+                      <KeyCap
+                        key={keyDef.code}
+                        keyDef={keyDef}
+                        state={getKeyState(keyDef.code, keyStates)}
+                        index={idx}
+                      />
+                    );
+                  })}
+                </div>
+                {/* Row 1+2: 7 8 9 [+tall], 4 5 6 */}
+                <div className="flex gap-1 items-start">
+                  <div className="flex flex-col gap-1">
+                    <div className="flex gap-1">
+                      {numpadCluster.rows[1].keys
+                        .filter((k) => !k.height || k.height === 1)
+                        .map((keyDef) => {
+                          const idx = nextIndex();
+                          return (
+                            <KeyCap
+                              key={keyDef.code}
+                              keyDef={keyDef}
+                              state={getKeyState(keyDef.code, keyStates)}
+                              index={idx}
+                            />
+                          );
+                        })}
+                    </div>
+                    <div className="flex gap-1">
+                      {numpadCluster.rows[2].keys.map((keyDef) => {
+                        const idx = nextIndex();
+                        return (
+                          <KeyCap
+                            key={keyDef.code}
+                            keyDef={keyDef}
+                            state={getKeyState(keyDef.code, keyStates)}
+                            index={idx}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                  {/* Tall + key spanning rows 1+2 */}
+                  {numpadCluster.rows[1].keys
+                    .filter((k) => k.height && k.height > 1)
+                    .map((keyDef) => {
+                      const idx = nextIndex();
+                      return (
+                        <KeyCap
+                          key={keyDef.code}
+                          keyDef={keyDef}
+                          state={getKeyState(keyDef.code, keyStates)}
+                          index={idx}
+                        />
+                      );
+                    })}
+                </div>
+                {/* Row 3+4: 1 2 3 [Enter tall], 0wide . */}
+                <div className="flex gap-1 items-start">
+                  <div className="flex flex-col gap-1">
+                    <div className="flex gap-1">
+                      {numpadCluster.rows[3].keys
+                        .filter((k) => !k.height || k.height === 1)
+                        .map((keyDef) => {
+                          const idx = nextIndex();
+                          return (
+                            <KeyCap
+                              key={keyDef.code}
+                              keyDef={keyDef}
+                              state={getKeyState(keyDef.code, keyStates)}
+                              index={idx}
+                            />
+                          );
+                        })}
+                    </div>
+                    <div className="flex gap-1">
+                      {numpadCluster.rows[4].keys.map((keyDef) => {
+                        const idx = nextIndex();
+                        return (
+                          <KeyCap
+                            key={keyDef.code}
+                            keyDef={keyDef}
+                            state={getKeyState(keyDef.code, keyStates)}
+                            index={idx}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                  {/* Tall Enter key spanning rows 3+4 */}
+                  {numpadCluster.rows[3].keys
+                    .filter((k) => k.height && k.height > 1)
+                    .map((keyDef) => {
+                      const idx = nextIndex();
+                      return (
+                        <KeyCap
+                          key={keyDef.code}
+                          keyDef={keyDef}
+                          state={getKeyState(keyDef.code, keyStates)}
+                          index={idx}
+                        />
+                      );
+                    })}
+                </div>
               </div>
             </div>
           </div>
-          {/* HP K100 product label */}
+          {/* Laptop product label */}
           <div className="absolute bottom-0 right-0 pb-0.5 pr-1 pointer-events-none">
             <span
               className="text-xs tracking-widest font-semibold select-none"
               style={{
-                color: "oklch(0.55 0.012 200)",
-                opacity: 0.4,
+                color: "oklch(0.72 0.22 195)",
+                opacity: 0.55,
                 fontFamily: "Geist Mono, ui-monospace, monospace",
                 letterSpacing: "0.18em",
                 fontSize: "9px",
               }}
             >
-              HP K100
+              FULL SIZE 104
             </span>
           </div>
         </div>
@@ -491,139 +616,5 @@ export default function KeyboardTester() {
         </p>
       </footer>
     </div>
-  );
-}
-
-// Numpad rows need special handling for the tall + and Enter keys
-function NumpadRow({
-  row,
-  keyStates,
-}: {
-  row: { keys: KeyDef[] };
-  keyStates: Record<string, KeyState>;
-}) {
-  const KEY_SIZE_PX = 40;
-  const KEY_GAP_PX = 4;
-
-  const tallKeys: Record<string, number> = {
-    NumpadAdd: 2,
-    NumpadEnter: 2,
-  };
-
-  return (
-    <div className="flex gap-1">
-      {row.keys.map((keyDef) => {
-        const isTall = !!tallKeys[keyDef.code];
-        const idx = nextIndex();
-        const widthPx =
-          (keyDef.width ?? 1) * KEY_SIZE_PX +
-          ((keyDef.width ?? 1) - 1) * KEY_GAP_PX;
-        const heightPx = isTall ? 2 * KEY_SIZE_PX + KEY_GAP_PX : KEY_SIZE_PX;
-
-        const state = getKeyState(keyDef.code, keyStates);
-
-        return (
-          <TallKeyCap
-            key={keyDef.code}
-            keyDef={keyDef}
-            state={state}
-            index={idx}
-            widthPx={widthPx}
-            heightPx={heightPx}
-          />
-        );
-      })}
-    </div>
-  );
-}
-
-interface TallKeyCapProps {
-  keyDef: KeyDef;
-  state: KeyState;
-  index: number;
-  widthPx: number;
-  heightPx: number;
-}
-
-function TallKeyCap({
-  keyDef,
-  state,
-  index,
-  widthPx,
-  heightPx,
-}: TallKeyCapProps) {
-  const isActive = state === "active";
-  const isTested = state === "tested";
-
-  function getStateClass(s: KeyState): string {
-    switch (s) {
-      case "active":
-        return "key-active";
-      case "tested":
-        return "key-tested";
-      default:
-        return "key-untested";
-    }
-  }
-
-  return (
-    <motion.div
-      data-ocid={`keyboard.key.${index}`}
-      data-key-code={keyDef.code}
-      className={`relative flex flex-col items-center justify-center border rounded-[4px] select-none cursor-default transition-all duration-75 ${getStateClass(state)}`}
-      style={{
-        width: `${widthPx}px`,
-        minWidth: `${widthPx}px`,
-        height: `${heightPx}px`,
-        flexShrink: 0,
-        fontSize: keyDef.label.length > 3 ? "9px" : "11px",
-        fontFamily: "Geist Mono, ui-monospace, monospace",
-        fontWeight: 600,
-        letterSpacing: "0.02em",
-        borderWidth: "1px",
-      }}
-      animate={{
-        scale: isActive ? 0.94 : 1,
-        y: isActive ? 3 : 0,
-      }}
-      transition={{ duration: 0.05 }}
-    >
-      {/* Shine */}
-      <div
-        className="absolute inset-0 rounded-[3px] pointer-events-none"
-        style={{
-          background: isActive
-            ? "linear-gradient(to bottom, oklch(1 0 0 / 0.10), transparent 60%)"
-            : isTested
-              ? "linear-gradient(to bottom, oklch(1 0 0 / 0.15), transparent 60%)"
-              : "linear-gradient(to bottom, oklch(1 0 0 / 0.07), transparent 60%)",
-        }}
-      />
-      {isTested && (
-        <motion.div
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="absolute top-1 right-1 w-1 h-1 rounded-full"
-          style={{ background: "oklch(0.90 0 0 / 0.5)" }}
-        />
-      )}
-      <span
-        className="relative z-10 leading-tight text-center px-0.5"
-        style={{
-          fontSize: keyDef.label.length > 3 ? "9px" : "11px",
-          lineHeight: 1.2,
-        }}
-      >
-        {keyDef.label}
-      </span>
-      {keyDef.subLabel && (
-        <span
-          className="relative z-10 leading-tight"
-          style={{ fontSize: "8px", opacity: 0.6 }}
-        >
-          {keyDef.subLabel}
-        </span>
-      )}
-    </motion.div>
   );
 }

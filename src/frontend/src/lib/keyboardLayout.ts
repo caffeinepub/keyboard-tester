@@ -5,7 +5,9 @@ export interface KeyDef {
   label: string;
   /** Tailwind width units as a number (default 1 = w-10) */
   width?: number;
-  /** optional sub-label for numpad keys etc */
+  /** Height units (default 1). 2 = tall key like numpad + or Enter */
+  height?: number;
+  /** optional sub-label for function key shortcuts etc */
   subLabel?: string;
 }
 
@@ -18,29 +20,26 @@ export interface KeySection {
   rows: KeyRow[];
 }
 
-// Main keyboard sections
+// Main laptop keyboard sections
 export const mainKeyboard: KeySection[] = [
   {
     id: "function-row",
     rows: [
       {
         keys: [
-          { code: "Escape", label: "Esc", subLabel: "fn" },
-          { code: "F1", label: "F1", subLabel: "Help" },
-          { code: "F2", label: "F2", subLabel: "Dim" },
-          { code: "F3", label: "F3", subLabel: "Search" },
-          { code: "F4", label: "F4", subLabel: "Close" },
-          { code: "F5", label: "F5", subLabel: "Refr" },
-          { code: "F6", label: "F6" },
-          { code: "F7", label: "F7", subLabel: "|◄◄" },
-          { code: "F8", label: "F8", subLabel: "►||" },
-          { code: "F9", label: "F9", subLabel: "►►|" },
+          { code: "Escape", label: "Esc" },
+          { code: "F1", label: "F1", subLabel: "🔆" },
+          { code: "F2", label: "F2", subLabel: "🔅" },
+          { code: "F3", label: "F3", subLabel: "⊞" },
+          { code: "F4", label: "F4", subLabel: "⌕" },
+          { code: "F5", label: "F5", subLabel: "⟳" },
+          { code: "F6", label: "F6", subLabel: "🔇" },
+          { code: "F7", label: "F7", subLabel: "◄◄" },
+          { code: "F8", label: "F8", subLabel: "▶||" },
+          { code: "F9", label: "F9", subLabel: "▶▶" },
           { code: "F10", label: "F10", subLabel: "Mute" },
           { code: "F11", label: "F11", subLabel: "Vol-" },
           { code: "F12", label: "F12", subLabel: "Vol+" },
-          { code: "PrintScreen", label: "PrtSc" },
-          { code: "ScrollLock", label: "ScrLk" },
-          { code: "Pause", label: "Pause" },
         ],
       },
     ],
@@ -119,14 +118,14 @@ export const mainKeyboard: KeySection[] = [
       },
       {
         keys: [
-          { code: "ControlLeft", label: "Ctrl", width: 1.25 },
-          { code: "MetaLeft", label: "⊞ Win", width: 1.25 },
-          { code: "AltLeft", label: "Alt", width: 1.25 },
-          { code: "Space", label: "", width: 6.25 },
-          { code: "AltRight", label: "Alt", width: 1.25 },
-          { code: "Fn", label: "Fn", width: 1.25 },
-          { code: "ContextMenu", label: "☰", width: 1.25 },
-          { code: "ControlRight", label: "Ctrl", width: 1.25 },
+          { code: "ControlLeft", label: "Ctrl", width: 1.5 },
+          { code: "MetaLeft", label: "⊞ Win", width: 1 },
+          { code: "AltLeft", label: "Alt", width: 1 },
+          { code: "Space", label: "", width: 5.5 },
+          { code: "AltRight", label: "Alt", width: 1 },
+          { code: "Fn", label: "Fn", width: 1 },
+          { code: "ContextMenu", label: "☰", width: 1 },
+          { code: "ControlRight", label: "Ctrl", width: 1.5 },
         ],
       },
     ],
@@ -136,6 +135,17 @@ export const mainKeyboard: KeySection[] = [
 export const navigationCluster: KeySection = {
   id: "nav-cluster",
   rows: [
+    {
+      // PrtSc / ScrLk / Pause -- top row of nav cluster
+      keys: [
+        { code: "PrintScreen", label: "PrtSc" },
+        { code: "ScrollLock", label: "ScrLk" },
+        { code: "Pause", label: "Pause" },
+      ],
+    },
+    {
+      keys: [], // spacer between top row and ins/home/pgup
+    },
     {
       keys: [
         { code: "Insert", label: "Ins" },
@@ -166,7 +176,7 @@ export const navigationCluster: KeySection = {
   ],
 };
 
-export const numpad: KeySection = {
+export const numpadCluster: KeySection = {
   id: "numpad",
   rows: [
     {
@@ -179,37 +189,37 @@ export const numpad: KeySection = {
     },
     {
       keys: [
-        { code: "Numpad7", label: "7", subLabel: "Home" },
-        { code: "Numpad8", label: "8", subLabel: "▲" },
-        { code: "Numpad9", label: "9", subLabel: "PgUp" },
-        { code: "NumpadAdd", label: "+", width: 1 },
+        { code: "Numpad7", label: "7" },
+        { code: "Numpad8", label: "8" },
+        { code: "Numpad9", label: "9" },
+        { code: "NumpadAdd", label: "+", height: 2 },
       ],
     },
     {
       keys: [
-        { code: "Numpad4", label: "4", subLabel: "◄" },
+        { code: "Numpad4", label: "4" },
         { code: "Numpad5", label: "5" },
-        { code: "Numpad6", label: "6", subLabel: "►" },
+        { code: "Numpad6", label: "6" },
       ],
     },
     {
       keys: [
-        { code: "Numpad1", label: "1", subLabel: "End" },
-        { code: "Numpad2", label: "2", subLabel: "▼" },
-        { code: "Numpad3", label: "3", subLabel: "PgDn" },
-        { code: "NumpadEnter", label: "↵", width: 1 },
+        { code: "Numpad1", label: "1" },
+        { code: "Numpad2", label: "2" },
+        { code: "Numpad3", label: "3" },
+        { code: "NumpadEnter", label: "Enter", height: 2 },
       ],
     },
     {
       keys: [
-        { code: "Numpad0", label: "0", subLabel: "Ins", width: 2 },
-        { code: "NumpadDecimal", label: ".", subLabel: "Del" },
+        { code: "Numpad0", label: "0", width: 2 },
+        { code: "NumpadDecimal", label: "." },
       ],
     },
   ],
 };
 
-// Collect all key codes for stats
+// Collect all key codes for stats (104-key full layout with numpad)
 export function getAllKeyCodes(): string[] {
   const codes: string[] = [];
   for (const section of mainKeyboard) {
@@ -224,7 +234,7 @@ export function getAllKeyCodes(): string[] {
       codes.push(key.code);
     }
   }
-  for (const row of numpad.rows) {
+  for (const row of numpadCluster.rows) {
     for (const key of row.keys) {
       codes.push(key.code);
     }

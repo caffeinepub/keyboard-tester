@@ -9,6 +9,7 @@ interface KeyCapProps {
 }
 
 const WIDTH_UNIT = 40; // px per width unit
+const HEIGHT_UNIT = 40; // px per height unit
 const KEY_GAP = 4; // px
 
 function getStateClass(state: KeyState): string {
@@ -25,7 +26,8 @@ function getStateClass(state: KeyState): string {
 export function KeyCap({ keyDef, state, index }: KeyCapProps) {
   const widthPx =
     (keyDef.width ?? 1) * WIDTH_UNIT + ((keyDef.width ?? 1) - 1) * KEY_GAP;
-  const isSpace = keyDef.code === "Space";
+  const heightUnits = keyDef.height ?? 1;
+  const heightPx = heightUnits * HEIGHT_UNIT + (heightUnits - 1) * KEY_GAP;
   const isActive = state === "active";
   const isTested = state === "tested";
 
@@ -37,7 +39,7 @@ export function KeyCap({ keyDef, state, index }: KeyCapProps) {
       style={{
         width: `${widthPx}px`,
         minWidth: `${widthPx}px`,
-        height: isSpace ? "40px" : "40px",
+        height: `${heightPx}px`,
         flexShrink: 0,
         fontSize: keyDef.label.length > 3 ? "9px" : "11px",
         fontFamily: "Geist Mono, ui-monospace, monospace",
@@ -75,14 +77,15 @@ export function KeyCap({ keyDef, state, index }: KeyCapProps) {
         />
       )}
 
-      {/* Active glow */}
+      {/* Active glow burst */}
       {isActive && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="absolute inset-0 pointer-events-none rounded-[3px]"
           style={{
-            boxShadow: "inset 0 0 12px oklch(0.90 0.20 195 / 0.4)",
+            boxShadow:
+              "inset 0 0 18px oklch(0.95 0.22 195 / 0.7), 0 0 20px oklch(0.85 0.22 195 / 0.6), 0 0 40px oklch(0.80 0.22 195 / 0.4)",
           }}
         />
       )}
