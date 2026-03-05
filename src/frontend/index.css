@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("/assets/fonts/GeistMono[wght].woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Mona Sans";
+  src: url("/assets/fonts/Mona-Sans.woff2") format("woff2 supports variations"),
+    url("/assets/fonts/Mona-Sans.woff2") format("woff2");
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  :root {
+    --radius: 0.5rem;
+
+    /* Dark terminal theme */
+    --background: 0.12 0.006 260;
+    --foreground: 0.92 0.015 200;
+    --card: 0.16 0.008 255;
+    --card-foreground: 0.92 0.015 200;
+    --popover: 0.18 0.01 260;
+    --popover-foreground: 0.92 0.015 200;
+    --primary: 0.82 0.18 195;
+    --primary-foreground: 0.10 0.01 260;
+    --secondary: 0.20 0.01 260;
+    --secondary-foreground: 0.85 0.015 200;
+    --muted: 0.20 0.008 260;
+    --muted-foreground: 0.55 0.015 200;
+    --accent: 0.78 0.22 195;
+    --accent-foreground: 0.10 0.01 260;
+    --destructive: 0.577 0.245 27.325;
+    --destructive-foreground: 0.985 0 0;
+    --border: 0.28 0.015 255;
+    --input: 0.28 0.015 255;
+    --ring: 0.78 0.18 195;
+
+    /* Key states */
+    --key-untested: 0.18 0.01 255;
+    --key-untested-border: 0.28 0.015 255;
+    --key-untested-shadow: 0.10 0.005 260;
+    --key-active: 0.80 0.20 195;
+    --key-active-border: 0.88 0.18 195;
+    --key-active-shadow: 0.55 0.25 195;
+    --key-tested: 0.68 0.18 152;
+    --key-tested-border: 0.76 0.20 152;
+    --key-tested-shadow: 0.40 0.15 152;
+
+    --chart-1: 0.646 0.222 41.116;
+    --chart-2: 0.6 0.118 184.704;
+    --chart-3: 0.398 0.07 227.392;
+    --chart-4: 0.828 0.189 84.429;
+    --chart-5: 0.769 0.188 70.08;
+    --sidebar: 0.14 0.008 260;
+    --sidebar-foreground: 0.92 0.015 200;
+    --sidebar-primary: 0.82 0.18 195;
+    --sidebar-primary-foreground: 0.10 0.01 260;
+    --sidebar-accent: 0.20 0.01 260;
+    --sidebar-accent-foreground: 0.85 0.015 200;
+    --sidebar-border: 0.28 0.015 255;
+    --sidebar-ring: 0.78 0.18 195;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Geist Mono", ui-monospace, monospace;
+  }
+
+  html {
+    color-scheme: dark;
+  }
+}
+
+@layer utilities {
+  .key-untested {
+    background: oklch(var(--key-untested));
+    border-color: oklch(var(--key-untested-border));
+    box-shadow: 0 4px 0 oklch(var(--key-untested-shadow)), 0 6px 12px oklch(0.05 0 0 / 0.8);
+    color: oklch(0.65 0.015 200);
+  }
+
+  .key-active {
+    background: oklch(var(--key-active));
+    border-color: oklch(var(--key-active-border));
+    box-shadow: 0 1px 0 oklch(var(--key-active-shadow)), 0 2px 8px oklch(var(--key-active) / 0.5);
+    color: oklch(0.08 0.01 260);
+    transform: translateY(3px);
+  }
+
+  .key-tested {
+    background: oklch(var(--key-tested));
+    border-color: oklch(var(--key-tested-border));
+    box-shadow: 0 4px 0 oklch(var(--key-tested-shadow)), 0 6px 12px oklch(var(--key-tested) / 0.3);
+    color: oklch(0.08 0.01 260);
+  }
+
+  .keyboard-bg {
+    background: oklch(0.14 0.01 260);
+    border: 1px solid oklch(0.22 0.015 255);
+    box-shadow: 0 0 0 1px oklch(0.30 0.02 255), 0 20px 60px oklch(0.05 0 0 / 0.9), inset 0 1px 0 oklch(0.30 0.02 255 / 0.3);
+  }
+
+  .scanline-bg {
+    background-image: repeating-linear-gradient(
+      0deg,
+      oklch(0 0 0 / 0.03) 0px,
+      oklch(0 0 0 / 0.03) 1px,
+      transparent 1px,
+      transparent 4px
+    );
+  }
+
+  .glow-cyan {
+    text-shadow: 0 0 20px oklch(0.82 0.20 195 / 0.8);
+  }
+
+  .glow-green {
+    text-shadow: 0 0 20px oklch(0.70 0.18 152 / 0.8);
+  }
+}
