@@ -3,13 +3,10 @@ import { AnimatePresence, motion } from "motion/react";
 import { useKeyboardTester } from "../hooks/useKeyboardTester";
 import {
   type KeyState,
-  mainKeyboard,
-  navigationCluster,
-  numpadCluster,
+  arrowCluster,
+  laptopKeyboard,
 } from "../lib/keyboardLayout";
 import { KeyCap } from "./KeyCap";
-
-const KEY_SIZE = 40;
 
 let globalKeyIndex = 0;
 function nextIndex() {
@@ -38,36 +35,10 @@ function getKeyLabel(code: string): string {
     F10: "F10",
     F11: "F11",
     F12: "F12",
-    PrintScreen: "PrtSc",
-    ScrollLock: "ScrLk",
-    Pause: "Pause",
-    Insert: "Ins",
-    Home: "Home",
-    PageUp: "PgUp",
-    Delete: "Del",
-    End: "End",
-    PageDown: "PgDn",
     ArrowUp: "▲",
     ArrowLeft: "◄",
     ArrowDown: "▼",
     ArrowRight: "►",
-    NumLock: "Num",
-    NumpadDivide: "/",
-    NumpadMultiply: "*",
-    NumpadSubtract: "−",
-    NumpadAdd: "+",
-    NumpadEnter: "Enter",
-    NumpadDecimal: ".",
-    Numpad0: "0",
-    Numpad1: "1",
-    Numpad2: "2",
-    Numpad3: "3",
-    Numpad4: "4",
-    Numpad5: "5",
-    Numpad6: "6",
-    Numpad7: "7",
-    Numpad8: "8",
-    Numpad9: "9",
     Backquote: "`",
     Minus: "-",
     Equal: "=",
@@ -93,6 +64,7 @@ function getKeyLabel(code: string): string {
     AltRight: "Alt",
     Space: "Space",
     ContextMenu: "Menu",
+    Fn: "Fn",
   };
   if (code.startsWith("Key")) return code.slice(3);
   if (code.startsWith("Digit")) return code.slice(5);
@@ -115,7 +87,7 @@ export default function KeyboardTester() {
       style={{ background: "oklch(0.11 0.008 260)" }}
     >
       {/* Header */}
-      <header className="w-full max-w-[1200px] px-6 pt-8 pb-4">
+      <header className="w-full max-w-[1100px] px-6 pt-8 pb-4">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -142,7 +114,7 @@ export default function KeyboardTester() {
               KEYBOARD TESTER
             </h1>
             <p className="text-xs" style={{ color: "oklch(0.50 0.015 200)" }}>
-              Full Size Keyboard · 104 Keys
+              Laptop Keyboard · 75 Keys
             </p>
           </div>
           <div className="ml-auto flex items-center gap-2">
@@ -163,7 +135,7 @@ export default function KeyboardTester() {
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
-        className="w-full max-w-[1200px] px-6 mb-5"
+        className="w-full max-w-[1100px] px-6 mb-5"
       >
         <div
           className="rounded-lg border p-4 flex flex-col sm:flex-row sm:items-center gap-4"
@@ -344,7 +316,7 @@ export default function KeyboardTester() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4, delay: 0.15 }}
-        className="w-full max-w-[1200px] px-6 mb-4"
+        className="w-full max-w-[1100px] px-6 mb-4"
       >
         <div
           className="rounded-md border px-4 py-2 flex items-center gap-3"
@@ -399,58 +371,30 @@ export default function KeyboardTester() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
-        className="w-full max-w-[1200px] px-4 pb-6"
+        className="w-full max-w-[1100px] px-4 pb-6"
       >
         <div
           data-ocid="keyboard.canvas_target"
           className="keyboard-bg rounded-xl p-4 overflow-x-auto"
         >
-          <div className="inline-flex gap-3 min-w-max relative">
-            {/* Left: main keyboard */}
-            <div className="flex flex-col gap-1">
-              {mainKeyboard.map((section) => (
-                <div key={section.id} className="flex flex-col gap-1">
-                  {section.rows.map((row, rowIdx) => (
-                    <div
-                      // biome-ignore lint/suspicious/noArrayIndexKey: keyboard rows are fixed-order
-                      key={rowIdx}
-                      className="flex gap-1"
-                      style={{
-                        marginBottom: section.id === "function-row" ? "6px" : 0,
-                      }}
-                    >
-                      {row.keys.map((keyDef) => {
-                        const idx = nextIndex();
-                        return (
-                          <KeyCap
-                            key={keyDef.code}
-                            keyDef={keyDef}
-                            state={getKeyState(keyDef.code, keyStates)}
-                            index={idx}
-                          />
-                        );
-                      })}
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
+          {/* Laptop keyboard: all rows, arrow cluster on last row */}
+          <div className="inline-flex flex-col gap-1 min-w-max">
+            {laptopKeyboard.map((section) =>
+              section.rows.map((row, rowIdx) => {
+                const isLastMainRow =
+                  section.id === "main-keys" &&
+                  rowIdx === section.rows.length - 1;
 
-            {/* Right cluster: navigation + arrows */}
-            <div className="flex gap-2 ml-1">
-              {/* Navigation cluster */}
-              <div className="flex flex-col gap-1">
-                {navigationCluster.rows.map((row, rowIdx) => (
+                return (
                   <div
-                    // biome-ignore lint/suspicious/noArrayIndexKey: nav cluster rows are fixed-order
-                    key={rowIdx}
-                    className="flex gap-1"
+                    // biome-ignore lint/suspicious/noArrayIndexKey: fixed-order rows
+                    key={`${section.id}-${rowIdx}`}
+                    className="flex gap-1 items-end"
                     style={{
-                      height:
-                        row.keys.length === 0 ? `${KEY_SIZE}px` : undefined,
-                      justifyContent: rowIdx === 5 ? "center" : "flex-start",
+                      marginBottom: section.id === "function-row" ? "6px" : 0,
                     }}
                   >
+                    {/* Render the row keys */}
                     {row.keys.map((keyDef) => {
                       const idx = nextIndex();
                       return (
@@ -462,125 +406,42 @@ export default function KeyboardTester() {
                         />
                       );
                     })}
-                  </div>
-                ))}
-              </div>
 
-              {/* Numpad cluster */}
-              <div className="flex flex-col gap-1">
-                {/* Row 0: NumLock / * - */}
-                <div className="flex gap-1">
-                  {numpadCluster.rows[0].keys.map((keyDef) => {
-                    const idx = nextIndex();
-                    return (
-                      <KeyCap
-                        key={keyDef.code}
-                        keyDef={keyDef}
-                        state={getKeyState(keyDef.code, keyStates)}
-                        index={idx}
-                      />
-                    );
-                  })}
-                </div>
-                {/* Row 1+2: 7 8 9 [+tall], 4 5 6 */}
-                <div className="flex gap-1 items-start">
-                  <div className="flex flex-col gap-1">
-                    <div className="flex gap-1">
-                      {numpadCluster.rows[1].keys
-                        .filter((k) => !k.height || k.height === 1)
-                        .map((keyDef) => {
-                          const idx = nextIndex();
-                          return (
+                    {/* Arrow cluster attached to the end of the bottom row */}
+                    {isLastMainRow && (
+                      <div className="flex flex-col gap-1 ml-1">
+                        {/* Up arrow centered */}
+                        <div className="flex justify-center">
+                          <KeyCap
+                            keyDef={arrowCluster.upKey}
+                            state={getKeyState(
+                              arrowCluster.upKey.code,
+                              keyStates,
+                            )}
+                            index={nextIndex()}
+                          />
+                        </div>
+                        {/* Left / Down / Right */}
+                        <div className="flex gap-1">
+                          {arrowCluster.bottomRow.map((keyDef) => (
                             <KeyCap
                               key={keyDef.code}
                               keyDef={keyDef}
                               state={getKeyState(keyDef.code, keyStates)}
-                              index={idx}
+                              index={nextIndex()}
                             />
-                          );
-                        })}
-                    </div>
-                    <div className="flex gap-1">
-                      {numpadCluster.rows[2].keys.map((keyDef) => {
-                        const idx = nextIndex();
-                        return (
-                          <KeyCap
-                            key={keyDef.code}
-                            keyDef={keyDef}
-                            state={getKeyState(keyDef.code, keyStates)}
-                            index={idx}
-                          />
-                        );
-                      })}
-                    </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  {/* Tall + key spanning rows 1+2 */}
-                  {numpadCluster.rows[1].keys
-                    .filter((k) => k.height && k.height > 1)
-                    .map((keyDef) => {
-                      const idx = nextIndex();
-                      return (
-                        <KeyCap
-                          key={keyDef.code}
-                          keyDef={keyDef}
-                          state={getKeyState(keyDef.code, keyStates)}
-                          index={idx}
-                        />
-                      );
-                    })}
-                </div>
-                {/* Row 3+4: 1 2 3 [Enter tall], 0wide . */}
-                <div className="flex gap-1 items-start">
-                  <div className="flex flex-col gap-1">
-                    <div className="flex gap-1">
-                      {numpadCluster.rows[3].keys
-                        .filter((k) => !k.height || k.height === 1)
-                        .map((keyDef) => {
-                          const idx = nextIndex();
-                          return (
-                            <KeyCap
-                              key={keyDef.code}
-                              keyDef={keyDef}
-                              state={getKeyState(keyDef.code, keyStates)}
-                              index={idx}
-                            />
-                          );
-                        })}
-                    </div>
-                    <div className="flex gap-1">
-                      {numpadCluster.rows[4].keys.map((keyDef) => {
-                        const idx = nextIndex();
-                        return (
-                          <KeyCap
-                            key={keyDef.code}
-                            keyDef={keyDef}
-                            state={getKeyState(keyDef.code, keyStates)}
-                            index={idx}
-                          />
-                        );
-                      })}
-                    </div>
-                  </div>
-                  {/* Tall Enter key spanning rows 3+4 */}
-                  {numpadCluster.rows[3].keys
-                    .filter((k) => k.height && k.height > 1)
-                    .map((keyDef) => {
-                      const idx = nextIndex();
-                      return (
-                        <KeyCap
-                          key={keyDef.code}
-                          keyDef={keyDef}
-                          state={getKeyState(keyDef.code, keyStates)}
-                          index={idx}
-                        />
-                      );
-                    })}
-                </div>
-              </div>
-            </div>
+                );
+              }),
+            )}
           </div>
+
           {/* Laptop product label */}
-          <div className="absolute bottom-0 right-0 pb-0.5 pr-1 pointer-events-none">
+          <div className="flex justify-end mt-1 pr-1 pointer-events-none">
             <span
               className="text-xs tracking-widest font-semibold select-none"
               style={{
@@ -591,14 +452,14 @@ export default function KeyboardTester() {
                 fontSize: "9px",
               }}
             >
-              FULL SIZE 104
+              LAPTOP 75
             </span>
           </div>
         </div>
       </motion.main>
 
       {/* Footer */}
-      <footer className="w-full max-w-[1200px] px-6 py-4 mt-auto">
+      <footer className="w-full max-w-[1100px] px-6 py-4 mt-auto">
         <p
           className="text-center text-xs"
           style={{ color: "oklch(0.35 0.01 200)" }}

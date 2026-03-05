@@ -3,11 +3,11 @@ export type KeyState = "untested" | "active" | "tested";
 export interface KeyDef {
   code: string;
   label: string;
-  /** Tailwind width units as a number (default 1 = w-10) */
+  /** Width multiplier (default 1 = 40px unit) */
   width?: number;
-  /** Height units (default 1). 2 = tall key like numpad + or Enter */
+  /** Height units (default 1). */
   height?: number;
-  /** optional sub-label for function key shortcuts etc */
+  /** optional sub-label */
   subLabel?: string;
 }
 
@@ -20,8 +20,8 @@ export interface KeySection {
   rows: KeyRow[];
 }
 
-// Main laptop keyboard sections
-export const mainKeyboard: KeySection[] = [
+// Compact laptop keyboard layout (no numpad, no nav cluster)
+export const laptopKeyboard: KeySection[] = [
   {
     id: "function-row",
     rows: [
@@ -48,6 +48,7 @@ export const mainKeyboard: KeySection[] = [
     id: "main-keys",
     rows: [
       {
+        // Number row
         keys: [
           { code: "Backquote", label: "`" },
           { code: "Digit1", label: "1" },
@@ -66,6 +67,7 @@ export const mainKeyboard: KeySection[] = [
         ],
       },
       {
+        // QWERTY row
         keys: [
           { code: "Tab", label: "Tab →", width: 1.5 },
           { code: "KeyQ", label: "Q" },
@@ -84,6 +86,7 @@ export const mainKeyboard: KeySection[] = [
         ],
       },
       {
+        // ASDF row
         keys: [
           { code: "CapsLock", label: "Caps", width: 1.75 },
           { code: "KeyA", label: "A" },
@@ -101,6 +104,7 @@ export const mainKeyboard: KeySection[] = [
         ],
       },
       {
+        // ZXCV row
         keys: [
           { code: "ShiftLeft", label: "⇧ Shift", width: 2.25 },
           { code: "KeyZ", label: "Z" },
@@ -117,14 +121,14 @@ export const mainKeyboard: KeySection[] = [
         ],
       },
       {
+        // Bottom row
         keys: [
           { code: "ControlLeft", label: "Ctrl", width: 1.5 },
-          { code: "MetaLeft", label: "⊞ Win", width: 1 },
-          { code: "AltLeft", label: "Alt", width: 1 },
-          { code: "Space", label: "", width: 5.5 },
-          { code: "AltRight", label: "Alt", width: 1 },
+          { code: "MetaLeft", label: "⊞ Win", width: 1.25 },
+          { code: "AltLeft", label: "Alt", width: 1.25 },
+          { code: "Space", label: "", width: 5.25 },
+          { code: "AltRight", label: "Alt", width: 1.25 },
           { code: "Fn", label: "Fn", width: 1 },
-          { code: "ContextMenu", label: "☰", width: 1 },
           { code: "ControlRight", label: "Ctrl", width: 1.5 },
         ],
       },
@@ -132,112 +136,36 @@ export const mainKeyboard: KeySection[] = [
   },
 ];
 
-export const navigationCluster: KeySection = {
-  id: "nav-cluster",
-  rows: [
-    {
-      // PrtSc / ScrLk / Pause -- top row of nav cluster
-      keys: [
-        { code: "PrintScreen", label: "PrtSc" },
-        { code: "ScrollLock", label: "ScrLk" },
-        { code: "Pause", label: "Pause" },
-      ],
-    },
-    {
-      keys: [], // spacer between top row and ins/home/pgup
-    },
-    {
-      keys: [
-        { code: "Insert", label: "Ins" },
-        { code: "Home", label: "Home" },
-        { code: "PageUp", label: "PgUp" },
-      ],
-    },
-    {
-      keys: [
-        { code: "Delete", label: "Del" },
-        { code: "End", label: "End" },
-        { code: "PageDown", label: "PgDn" },
-      ],
-    },
-    {
-      keys: [], // spacer row
-    },
-    {
-      keys: [{ code: "ArrowUp", label: "▲" }],
-    },
-    {
-      keys: [
-        { code: "ArrowLeft", label: "◄" },
-        { code: "ArrowDown", label: "▼" },
-        { code: "ArrowRight", label: "►" },
-      ],
-    },
+// Arrow key cluster for laptop (Up above, then Left/Down/Right)
+export const arrowCluster = {
+  upKey: { code: "ArrowUp", label: "▲" } as KeyDef,
+  bottomRow: [
+    { code: "ArrowLeft", label: "◄" } as KeyDef,
+    { code: "ArrowDown", label: "▼" } as KeyDef,
+    { code: "ArrowRight", label: "►" } as KeyDef,
   ],
 };
 
-export const numpadCluster: KeySection = {
-  id: "numpad",
-  rows: [
-    {
-      keys: [
-        { code: "NumLock", label: "Num" },
-        { code: "NumpadDivide", label: "/" },
-        { code: "NumpadMultiply", label: "*" },
-        { code: "NumpadSubtract", label: "−" },
-      ],
-    },
-    {
-      keys: [
-        { code: "Numpad7", label: "7" },
-        { code: "Numpad8", label: "8" },
-        { code: "Numpad9", label: "9" },
-        { code: "NumpadAdd", label: "+", height: 2 },
-      ],
-    },
-    {
-      keys: [
-        { code: "Numpad4", label: "4" },
-        { code: "Numpad5", label: "5" },
-        { code: "Numpad6", label: "6" },
-      ],
-    },
-    {
-      keys: [
-        { code: "Numpad1", label: "1" },
-        { code: "Numpad2", label: "2" },
-        { code: "Numpad3", label: "3" },
-        { code: "NumpadEnter", label: "Enter", height: 2 },
-      ],
-    },
-    {
-      keys: [
-        { code: "Numpad0", label: "0", width: 2 },
-        { code: "NumpadDecimal", label: "." },
-      ],
-    },
-  ],
-};
-
-// Collect all key codes for stats (104-key full layout with numpad)
+// Collect all key codes for the laptop layout
 export function getAllKeyCodes(): string[] {
   const codes: string[] = [];
-  for (const section of mainKeyboard) {
+  for (const section of laptopKeyboard) {
     for (const row of section.rows) {
       for (const key of row.keys) {
+        // Fn key doesn't fire a real keycode, skip from count
         if (key.code !== "Fn") codes.push(key.code);
       }
     }
   }
-  for (const row of navigationCluster.rows) {
-    for (const key of row.keys) {
-      codes.push(key.code);
-    }
-  }
-  for (const row of numpadCluster.rows) {
-    for (const key of row.keys) {
-      codes.push(key.code);
-    }
+  // Arrow keys
+  codes.push(arrowCluster.upKey.code);
+  for (const k of arrowCluster.bottomRow) {
+    codes.push(k.code);
   }
   return codes;
 }
+
+// Keep these exports for backward compat (unused but avoid import errors)
+export const mainKeyboard = laptopKeyboard;
+export const navigationCluster = { id: "nav", rows: [] };
+export const numpadCluster = { id: "numpad", rows: [] };
