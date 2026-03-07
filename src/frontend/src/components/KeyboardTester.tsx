@@ -1,10 +1,14 @@
-import { Activity, Keyboard, RotateCcw } from "lucide-react";
+import { Activity, Keyboard, RotateCcw, Volume2, VolumeX } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
 import { useKeyboardTester } from "../hooks/useKeyboardTester";
 import {
   type KeyState,
   arrowCluster,
   laptopKeyboard,
+  navigationCluster,
+  numpadCluster,
+  sysKeyCluster,
 } from "../lib/keyboardLayout";
 import { KeyCap } from "./KeyCap";
 
@@ -65,27 +69,119 @@ function getKeyLabel(code: string): string {
     Space: "Space",
     ContextMenu: "Menu",
     Fn: "Fn",
+    PrintScreen: "PrtSc",
+    ScrollLock: "ScrLk",
+    Pause: "Pause",
   };
   if (code.startsWith("Key")) return code.slice(3);
   if (code.startsWith("Digit")) return code.slice(5);
   return map[code] ?? code;
 }
 
+// Confetti piece config
+interface ConfettiPiece {
+  id: number;
+  left: number;
+  color: string;
+  delay: number;
+  size: number;
+  duration: number;
+}
+
+const CONFETTI_COLORS = [
+  "oklch(0.72 0.25 25)",
+  "oklch(0.78 0.22 55)",
+  "oklch(0.75 0.20 130)",
+  "oklch(0.72 0.22 195)",
+  "oklch(0.70 0.24 280)",
+  "oklch(0.76 0.22 320)",
+  "oklch(0.80 0.20 100)",
+  "oklch(0.74 0.26 10)",
+];
+
+function generateConfetti(count: number): ConfettiPiece[] {
+  return Array.from({ length: count }, (_, i) => ({
+    id: i,
+    left: Math.random() * 100,
+    color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+    delay: Math.random() * 0.8,
+    size: 6 + Math.random() * 8,
+    duration: 1.5 + Math.random() * 1,
+  }));
+}
+
 export default function KeyboardTester() {
-  const { keyStates, lastKey, totalKeys, testedCount, reset } =
-    useKeyboardTester();
+  const {
+    keyStates,
+    lastKey,
+    totalKeys,
+    testedCount,
+    streak,
+    soundEnabled,
+    setSoundEnabled,
+    reset,
+  } = useKeyboardTester();
   const progressPct = totalKeys > 0 ? (testedCount / totalKeys) * 100 : 0;
+
+  // Confetti: show only once when 100% is reached
+  const confettiFiredRef = useRef(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [confettiPieces] = useState(() => generateConfetti(20));
+
+  useEffect(() => {
+    if (
+      testedCount === totalKeys &&
+      totalKeys > 0 &&
+      !confettiFiredRef.current
+    ) {
+      confettiFiredRef.current = true;
+      setShowConfetti(true);
+      // Remove confetti after animation
+      setTimeout(() => setShowConfetti(false), 2500);
+    }
+    // Reset confetti flag on reset (when testedCount drops back to 0)
+    if (testedCount === 0) {
+      confettiFiredRef.current = false;
+    }
+  }, [testedCount, totalKeys]);
 
   // Reset global key index before render
   globalKeyIndex = 0;
-
-  const year = new Date().getFullYear();
 
   return (
     <div
       className="min-h-screen flex flex-col items-center scanline-bg"
       style={{ background: "oklch(0.11 0.008 260)" }}
     >
+      {/* Confetti overlay */}
+      {showConfetti && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            pointerEvents: "none",
+            zIndex: 50,
+            overflow: "hidden",
+          }}
+        >
+          {confettiPieces.map((piece) => (
+            <div
+              key={piece.id}
+              style={{
+                position: "absolute",
+                top: "-20px",
+                left: `${piece.left}%`,
+                width: `${piece.size}px`,
+                height: `${piece.size}px`,
+                background: piece.color,
+                borderRadius: Math.random() > 0.5 ? "50%" : "2px",
+                animation: `confettiFall ${piece.duration}s ease-in ${piece.delay}s forwards`,
+              }}
+            />
+          ))}
+        </div>
+      )}
+
       {/* Header */}
       <header className="w-full max-w-[1100px] px-6 pt-8 pb-4">
         <motion.div
@@ -105,16 +201,32 @@ export default function KeyboardTester() {
           </div>
           <div>
             <h1
-              className="text-xl font-bold tracking-tight glow-cyan"
+              className="text-xl font-bold tracking-tight glow-cyan flex items-center gap-2"
               style={{
                 fontFamily: "Geist Mono, ui-monospace, monospace",
                 color: "oklch(0.88 0.20 195)",
               }}
             >
               KEYBOARD TESTER
+              <sup
+                style={{
+                  fontSize: "10px",
+                  fontWeight: 700,
+                  letterSpacing: "0.05em",
+                  padding: "1px 5px",
+                  borderRadius: "4px",
+                  background: "oklch(0.20 0.05 195)",
+                  border: "1px solid oklch(0.50 0.18 195)",
+                  color: "oklch(0.82 0.22 195)",
+                  verticalAlign: "super",
+                  lineHeight: 1.4,
+                }}
+              >
+                3.0
+              </sup>
             </h1>
             <p className="text-xs" style={{ color: "oklch(0.50 0.015 200)" }}>
-              Laptop Keyboard · 75 Keys
+              Full-Size Keyboard · 104 Keys · v3.0
             </p>
           </div>
           <div className="ml-auto flex items-center gap-2">
@@ -153,25 +265,45 @@ export default function KeyboardTester() {
               >
                 KEYS TESTED
               </span>
-              <span
-                className="text-sm font-bold"
-                style={{
-                  color:
-                    progressPct === 100
-                      ? "oklch(0.72 0.18 152)"
-                      : "oklch(0.82 0.20 195)",
-                }}
-              >
-                {testedCount} / {totalKeys}
-              </span>
+              <div className="flex items-center gap-3">
+                {/* Big animated percentage */}
+                <motion.span
+                  key={Math.round(progressPct)}
+                  initial={{ scale: 0.85, opacity: 0.5 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.2 }}
+                  className="text-3xl font-bold glow-cyan"
+                  style={{
+                    color:
+                      progressPct === 100
+                        ? "oklch(0.72 0.18 152)"
+                        : "oklch(0.82 0.20 195)",
+                    fontFamily: "Geist Mono, ui-monospace, monospace",
+                    lineHeight: 1,
+                  }}
+                >
+                  {Math.round(progressPct)}%
+                </motion.span>
+                <span
+                  className="text-sm font-bold"
+                  style={{
+                    color:
+                      progressPct === 100
+                        ? "oklch(0.72 0.18 152)"
+                        : "oklch(0.82 0.20 195)",
+                  }}
+                >
+                  {testedCount} / {totalKeys}
+                </span>
+              </div>
             </div>
-            {/* Progress bar */}
+            {/* Progress bar with shimmer */}
             <div
               className="relative h-2 rounded-full overflow-hidden"
               style={{ background: "oklch(0.20 0.01 260)" }}
             >
               <motion.div
-                className="absolute inset-y-0 left-0 rounded-full"
+                className="absolute inset-y-0 left-0 rounded-full overflow-hidden"
                 style={{
                   background:
                     progressPct === 100
@@ -184,7 +316,10 @@ export default function KeyboardTester() {
                 }}
                 animate={{ width: `${progressPct}%` }}
                 transition={{ duration: 0.3 }}
-              />
+              >
+                {/* Shimmer overlay */}
+                <div className="absolute inset-0 shimmer-overlay rounded-full" />
+              </motion.div>
             </div>
             <div className="flex mt-1.5 gap-4">
               <span
@@ -280,6 +415,68 @@ export default function KeyboardTester() {
             />
             GAMING MODE
           </div>
+
+          {/* Streak counter */}
+          <AnimatePresence>
+            {streak > 0 && (
+              <motion.div
+                key="streak"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border text-xs font-bold select-none glow-orange"
+                style={{
+                  background: "oklch(0.16 0.04 45)",
+                  borderColor: "oklch(0.55 0.22 45)",
+                  color: "oklch(0.80 0.22 45)",
+                  fontFamily: "Geist Mono, ui-monospace, monospace",
+                  letterSpacing: "0.10em",
+                }}
+              >
+                🔥 STREAK: {streak}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Sound toggle */}
+          <button
+            type="button"
+            data-ocid="keyboard.sound_toggle"
+            onClick={() => setSoundEnabled(!soundEnabled)}
+            className="flex items-center gap-2 px-4 py-2 rounded-md border text-xs font-semibold transition-all duration-150"
+            style={{
+              background: soundEnabled
+                ? "oklch(0.18 0.04 195)"
+                : "oklch(0.18 0.01 260)",
+              borderColor: soundEnabled
+                ? "oklch(0.60 0.18 195)"
+                : "oklch(0.28 0.015 255)",
+              color: soundEnabled
+                ? "oklch(0.82 0.20 195)"
+                : "oklch(0.65 0.015 200)",
+              letterSpacing: "0.05em",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "oklch(0.22 0.015 260)";
+              e.currentTarget.style.borderColor = "oklch(0.82 0.20 195)";
+              e.currentTarget.style.color = "oklch(0.82 0.20 195)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = soundEnabled
+                ? "oklch(0.18 0.04 195)"
+                : "oklch(0.18 0.01 260)";
+              e.currentTarget.style.borderColor = soundEnabled
+                ? "oklch(0.60 0.18 195)"
+                : "oklch(0.28 0.015 255)";
+              e.currentTarget.style.color = soundEnabled
+                ? "oklch(0.82 0.20 195)"
+                : "oklch(0.65 0.015 200)";
+            }}
+          >
+            {soundEnabled ? <Volume2 size={12} /> : <VolumeX size={12} />}
+            {soundEnabled ? "SFX ON" : "SFX OFF"}
+          </button>
 
           {/* Reset */}
           <button
@@ -377,70 +574,153 @@ export default function KeyboardTester() {
           data-ocid="keyboard.canvas_target"
           className="keyboard-bg rounded-xl p-4 overflow-x-auto"
         >
-          {/* Laptop keyboard: all rows, arrow cluster on last row */}
-          <div className="inline-flex flex-col gap-1 min-w-max">
-            {laptopKeyboard.map((section) =>
-              section.rows.map((row, rowIdx) => {
-                const isLastMainRow =
-                  section.id === "main-keys" &&
-                  rowIdx === section.rows.length - 1;
+          {/* Full 104-key layout: main block + nav cluster + numpad */}
+          <div className="inline-flex flex-row gap-3 min-w-max items-start">
+            {/* ── Left block: function row + main keys + arrow cluster ── */}
+            <div className="flex flex-col gap-1">
+              {laptopKeyboard.map((section) =>
+                section.rows.map((row, rowIdx) => {
+                  const isLastMainRow =
+                    section.id === "main-keys" &&
+                    rowIdx === section.rows.length - 1;
+
+                  return (
+                    <div
+                      key={`${section.id}-${rowIdx}`}
+                      className="flex gap-1 items-end"
+                      style={{
+                        marginBottom: section.id === "function-row" ? "6px" : 0,
+                      }}
+                    >
+                      {row.keys.map((keyDef) => {
+                        const idx = nextIndex();
+                        return (
+                          <KeyCap
+                            key={keyDef.code}
+                            keyDef={keyDef}
+                            state={getKeyState(keyDef.code, keyStates)}
+                            index={idx}
+                            totalKeys={totalKeys}
+                          />
+                        );
+                      })}
+
+                      {/* Arrow cluster on bottom row */}
+                      {isLastMainRow && (
+                        <div className="flex flex-col gap-1 ml-1">
+                          <div className="flex justify-center">
+                            <KeyCap
+                              keyDef={arrowCluster.upKey}
+                              state={getKeyState(
+                                arrowCluster.upKey.code,
+                                keyStates,
+                              )}
+                              index={nextIndex()}
+                              totalKeys={totalKeys}
+                            />
+                          </div>
+                          <div className="flex gap-1">
+                            {arrowCluster.bottomRow.map((keyDef) => (
+                              <KeyCap
+                                key={keyDef.code}
+                                keyDef={keyDef}
+                                state={getKeyState(keyDef.code, keyStates)}
+                                index={nextIndex()}
+                                totalKeys={totalKeys}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                }),
+              )}
+            </div>
+
+            {/* ── Middle: sys keys (PrtSc/ScrLk/Pause) + nav cluster ── */}
+            <div
+              className="flex flex-col gap-1"
+              style={{
+                marginTop: "calc(40px + 10px)" /* align below fn row gap */,
+              }}
+            >
+              {/* PrtSc / ScrLk / Pause row */}
+              {sysKeyCluster.rows.map((row, rowIdx) => (
+                <div
+                  // biome-ignore lint/suspicious/noArrayIndexKey: fixed-order rows
+                  key={`sys-${rowIdx}`}
+                  className="flex gap-1"
+                  style={{ marginBottom: "6px" }}
+                >
+                  {row.keys.map((keyDef) => (
+                    <KeyCap
+                      key={keyDef.code}
+                      keyDef={keyDef}
+                      state={getKeyState(keyDef.code, keyStates)}
+                      index={nextIndex()}
+                      totalKeys={totalKeys}
+                    />
+                  ))}
+                </div>
+              ))}
+              {/* Ins/Home/PgUp + Del/End/PgDn */}
+              {navigationCluster.rows.map((row, rowIdx) => (
+                <div
+                  // biome-ignore lint/suspicious/noArrayIndexKey: fixed-order rows
+                  key={`nav-${rowIdx}`}
+                  className="flex gap-1"
+                >
+                  {row.keys.map((keyDef) => (
+                    <KeyCap
+                      key={keyDef.code}
+                      keyDef={keyDef}
+                      state={getKeyState(keyDef.code, keyStates)}
+                      index={nextIndex()}
+                      totalKeys={totalKeys}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
+
+            {/* ── Right: numpad ── */}
+            <div
+              className="flex flex-col gap-1"
+              style={{ marginTop: "calc(40px + 10px)" }}
+            >
+              {numpadCluster.rows.map((row, rowIdx) => {
+                // Numpad+ spans rows 1-2, NumpadEnter spans rows 3-4
+                const isPhantomRow =
+                  (rowIdx === 2 &&
+                    row.keys.every((k) => k.code === "NumpadAdd")) ||
+                  (rowIdx === 4 &&
+                    row.keys.every((k) => k.code === "NumpadEnter"));
+
+                if (isPhantomRow) return null;
 
                 return (
                   <div
                     // biome-ignore lint/suspicious/noArrayIndexKey: fixed-order rows
-                    key={`${section.id}-${rowIdx}`}
-                    className="flex gap-1 items-end"
-                    style={{
-                      marginBottom: section.id === "function-row" ? "6px" : 0,
-                    }}
+                    key={`numpad-${rowIdx}`}
+                    className="flex gap-1 items-start"
                   >
-                    {/* Render the row keys */}
-                    {row.keys.map((keyDef) => {
-                      const idx = nextIndex();
-                      return (
-                        <KeyCap
-                          key={keyDef.code}
-                          keyDef={keyDef}
-                          state={getKeyState(keyDef.code, keyStates)}
-                          index={idx}
-                        />
-                      );
-                    })}
-
-                    {/* Arrow cluster attached to the end of the bottom row */}
-                    {isLastMainRow && (
-                      <div className="flex flex-col gap-1 ml-1">
-                        {/* Up arrow centered */}
-                        <div className="flex justify-center">
-                          <KeyCap
-                            keyDef={arrowCluster.upKey}
-                            state={getKeyState(
-                              arrowCluster.upKey.code,
-                              keyStates,
-                            )}
-                            index={nextIndex()}
-                          />
-                        </div>
-                        {/* Left / Down / Right */}
-                        <div className="flex gap-1">
-                          {arrowCluster.bottomRow.map((keyDef) => (
-                            <KeyCap
-                              key={keyDef.code}
-                              keyDef={keyDef}
-                              state={getKeyState(keyDef.code, keyStates)}
-                              index={nextIndex()}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                    {row.keys.map((keyDef) => (
+                      <KeyCap
+                        key={keyDef.code}
+                        keyDef={keyDef}
+                        state={getKeyState(keyDef.code, keyStates)}
+                        index={nextIndex()}
+                        totalKeys={totalKeys}
+                      />
+                    ))}
                   </div>
                 );
-              }),
-            )}
+              })}
+            </div>
           </div>
 
-          {/* Laptop product label */}
+          {/* Product label */}
           <div className="flex justify-end mt-1 pr-1 pointer-events-none">
             <span
               className="text-xs tracking-widest font-semibold select-none"
@@ -452,7 +732,7 @@ export default function KeyboardTester() {
                 fontSize: "9px",
               }}
             >
-              LAPTOP 75
+              GAMING 3.0 · 104 KEYS
             </span>
           </div>
         </div>
@@ -464,7 +744,7 @@ export default function KeyboardTester() {
           className="text-center text-xs"
           style={{ color: "oklch(0.35 0.01 200)" }}
         >
-          © {year}.{" "}
+          Keyboard Tester v3.0 ·{" "}
           <a
             href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(window.location.hostname)}`}
             target="_blank"

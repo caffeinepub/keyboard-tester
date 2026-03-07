@@ -1,11 +1,11 @@
 import { motion } from "motion/react";
-import type { KeyState } from "../lib/keyboardLayout";
-import type { KeyDef } from "../lib/keyboardLayout";
+import type { KeyDef, KeyState } from "../lib/keyboardLayout";
 
 interface KeyCapProps {
   keyDef: KeyDef;
   state: KeyState;
   index: number;
+  totalKeys?: number;
 }
 
 const WIDTH_UNIT = 40; // px per width unit
@@ -17,19 +17,34 @@ function getStateClass(state: KeyState): string {
     case "active":
       return "key-active";
     case "tested":
-      return "key-tested";
+      return "";
     default:
       return "key-untested";
   }
 }
 
-export function KeyCap({ keyDef, state, index }: KeyCapProps) {
+export function KeyCap({ keyDef, state, index, totalKeys = 104 }: KeyCapProps) {
   const widthPx =
     (keyDef.width ?? 1) * WIDTH_UNIT + ((keyDef.width ?? 1) - 1) * KEY_GAP;
   const heightUnits = keyDef.height ?? 1;
   const heightPx = heightUnits * HEIGHT_UNIT + (heightUnits - 1) * KEY_GAP;
   const isActive = state === "active";
   const isTested = state === "tested";
+
+  // Per-key rainbow hue for tested state
+  const keyHue = Math.round((index / totalKeys) * 360);
+
+  // Tested key dynamic style: hue-rotate shifts the base green color across the spectrum
+  const testedStyle = isTested
+    ? {
+        background: "oklch(0.68 0.18 152)",
+        borderColor: "oklch(0.76 0.20 152)",
+        boxShadow:
+          "0 4px 0 oklch(0.40 0.15 152), 0 6px 12px oklch(0.68 0.18 152 / 0.3)",
+        color: "oklch(0.08 0.01 260)",
+        filter: `hue-rotate(${keyHue}deg) brightness(1.1)`,
+      }
+    : {};
 
   return (
     <motion.div
@@ -48,6 +63,7 @@ export function KeyCap({ keyDef, state, index }: KeyCapProps) {
         borderWidth: "1px",
         position: "relative",
         overflow: "hidden",
+        ...testedStyle,
       }}
       animate={{
         scale: isActive ? 0.94 : 1,
@@ -75,6 +91,25 @@ export function KeyCap({ keyDef, state, index }: KeyCapProps) {
           className="absolute top-1 right-1 w-1 h-1 rounded-full"
           style={{ background: "oklch(0.90 0 0 / 0.5)" }}
         />
+      )}
+
+      {/* Ripple animation on active */}
+      {isActive && (
+        <div
+          className="absolute inset-0 flex items-center justify-center pointer-events-none"
+          style={{ zIndex: 5 }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              width: "100%",
+              height: "100%",
+              borderRadius: "50%",
+              background: "oklch(0.95 0.22 195 / 0.4)",
+              animation: "ripple 0.4s ease-out forwards",
+            }}
+          />
+        </div>
       )}
 
       {/* Active glow burst */}

@@ -146,7 +146,86 @@ export const arrowCluster = {
   ],
 };
 
-// Collect all key codes for the laptop layout
+// Print Screen / Scroll Lock / Pause cluster (sits above nav cluster)
+export const sysKeyCluster: KeySection = {
+  id: "sys-keys",
+  rows: [
+    {
+      keys: [
+        { code: "PrintScreen", label: "PrtSc" },
+        { code: "ScrollLock", label: "ScrLk" },
+        { code: "Pause", label: "Pause" },
+      ],
+    },
+  ],
+};
+
+// Navigation cluster (Insert/Delete/Home/End/PgUp/PgDn + arrows)
+export const navigationCluster: KeySection = {
+  id: "nav-cluster",
+  rows: [
+    {
+      keys: [
+        { code: "Insert", label: "Ins" },
+        { code: "Home", label: "Home" },
+        { code: "PageUp", label: "PgUp" },
+      ],
+    },
+    {
+      keys: [
+        { code: "Delete", label: "Del" },
+        { code: "End", label: "End" },
+        { code: "PageDown", label: "PgDn" },
+      ],
+    },
+  ],
+};
+
+// Numpad cluster (17 keys)
+export const numpadCluster: KeySection = {
+  id: "numpad",
+  rows: [
+    {
+      keys: [
+        { code: "NumLock", label: "Num" },
+        { code: "NumpadDivide", label: "/" },
+        { code: "NumpadMultiply", label: "*" },
+        { code: "NumpadSubtract", label: "-" },
+      ],
+    },
+    {
+      keys: [
+        { code: "Numpad7", label: "7", subLabel: "Home" },
+        { code: "Numpad8", label: "8", subLabel: "▲" },
+        { code: "Numpad9", label: "9", subLabel: "PgUp" },
+        { code: "NumpadAdd", label: "+", height: 2 },
+      ],
+    },
+    {
+      keys: [
+        { code: "Numpad4", label: "4", subLabel: "◄" },
+        { code: "Numpad5", label: "5" },
+        { code: "Numpad6", label: "6", subLabel: "►" },
+      ],
+    },
+    {
+      keys: [
+        { code: "Numpad1", label: "1", subLabel: "End" },
+        { code: "Numpad2", label: "2", subLabel: "▼" },
+        { code: "Numpad3", label: "3", subLabel: "PgDn" },
+        { code: "NumpadEnter", label: "Enter", height: 2 },
+      ],
+    },
+    {
+      keys: [
+        { code: "Numpad0", label: "0", subLabel: "Ins", width: 2 },
+        { code: "NumpadDecimal", label: ".", subLabel: "Del" },
+      ],
+    },
+  ],
+};
+
+// Collect all key codes for the 104-key layout
 export function getAllKeyCodes(): string[] {
   const codes: string[] = [];
   for (const section of laptopKeyboard) {
@@ -162,10 +241,25 @@ export function getAllKeyCodes(): string[] {
   for (const k of arrowCluster.bottomRow) {
     codes.push(k.code);
   }
+  // Sys key cluster (PrtSc, ScrLk, Pause)
+  for (const row of sysKeyCluster.rows) {
+    for (const key of row.keys) {
+      codes.push(key.code);
+    }
+  }
+  // Nav cluster
+  for (const row of navigationCluster.rows) {
+    for (const key of row.keys) {
+      codes.push(key.code);
+    }
+  }
+  // Numpad
+  for (const row of numpadCluster.rows) {
+    for (const key of row.keys) {
+      codes.push(key.code);
+    }
+  }
   return codes;
 }
 
-// Keep these exports for backward compat (unused but avoid import errors)
 export const mainKeyboard = laptopKeyboard;
-export const navigationCluster = { id: "nav", rows: [] };
-export const numpadCluster = { id: "numpad", rows: [] };
